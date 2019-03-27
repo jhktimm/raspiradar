@@ -88,6 +88,9 @@ void MainWindow::on_actionRefresh_triggered()
     QVector<double> xhfft;
     QVector<double> yh;
     QVector<double> yhfft;
+    
+    double max_x = 0;
+    double max_y = 0;
     xh.resize(samples);
     yh.resize(samples);
     xhfft.resize(samples/2);
@@ -158,8 +161,12 @@ void MainWindow::on_actionRefresh_triggered()
     for  ( int i = 0; i < samples/2;i++) {
         xhfft[i] = i;
         yhfft[i] = sqrt( (double) cout[i].r * cout[i].r + (double) cout[i].i * cout[i].i );
+        if (yhfft[i] > max_y) {
+            max_x = xhfft[i];
+            max_y = yhfft[i];
+        }
     }
-
+    std::cout << "Max at: " << max_x << std::endl;
     ui->qplotfft->clearGraphs();
     ui->qplotfft->xAxis->setRange(1,samples/2);
     ui->qplotfft->yAxis->setRange(1,10000000);
