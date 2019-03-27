@@ -90,7 +90,9 @@ void MainWindow::on_actionRefresh_triggered()
     QVector<double> yhfft;
     
     double max_x = 0;
-    double max_y = 0;
+    double max_y = -999999999999.9;
+    double min_y = 999999999999;
+    int sampesToIgnoreAtBegin = 4;
     xh.resize(samples);
     yh.resize(samples);
     xhfft.resize(samples/2);
@@ -161,15 +163,17 @@ void MainWindow::on_actionRefresh_triggered()
     for  ( int i = 0; i < samples/2;i++) {
         xhfft[i] = i;
         yhfft[i] = sqrt( (double) cout[i].r * cout[i].r + (double) cout[i].i * cout[i].i );
-        if (yhfft[i] > max_y) {
+        if ((yhfft[i] > max_y) & (i > sampesToIgnoreAtBegin) ) {
             max_x = xhfft[i];
             max_y = yhfft[i];
         }
+        if (yhfft[i] < min_y) min_y = yhfft[i];
     }
     std::cout << "Max at: " << max_x << std::endl;
     ui->qplotfft->clearGraphs();
-    ui->qplotfft->xAxis->setRange(1,samples/2);
-    ui->qplotfft->yAxis->setRange(1,10000000);
+    ui->qplotfft->xAxis->setRange(0.5,samples/2);
+//     ui->qplotfft->yAxis->setRange(0.1,10000000);
+    ui->qplotfft->yAxis->setRange(min_y,max_y);
     ui->qplotfft->xAxis->setScaleType(QCPAxis::stLogarithmic);
     ui->qplotfft->yAxis->setScaleType(QCPAxis::stLogarithmic);
     ui->qplotfft->addGraph();
@@ -179,15 +183,26 @@ void MainWindow::on_actionRefresh_triggered()
     ui->qplotfft->replot();
 }
 
+void MainWindow::loop()
+{
+    while (osziMode) {    
+        this->on_actionRefresh_triggered();
+    }
+}
+
 void MainWindow::on_actionOszi_mode_triggered(bool checked)
 {
-    std::cout << "arsch\n";
-    if (checked) {
-        connect(&daqTimer, SIGNAL(timeout()), this, SLOT(on_actionRefresh_triggered()) );
-        daqTimer.start(0);
-    } else {
-        daqTimer.stop();
-    }
+    osziMode = checked;
+    std::thread t (&MainWindow::loop,this);
+    t.detach();
+
+    
+//     if (checked) {
+//         connect(&daqTimer, SIGNAL(timeout()), this, SLOT(on_actionRefresh_triggered()) );
+//         daqTimer.start(0);
+//     } else {
+//         daqTimer.stop();
+//     }
 }
 
 void MainWindow::on_actionExit_triggered()

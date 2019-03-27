@@ -19,6 +19,7 @@
 #include "kiss_fft.h"
 #include <bitset>
 #include <iostream>
+#include <thread>
 
 #include <QString>
 #include <QFileDialog>
@@ -79,6 +80,9 @@ private slots:
     void on_actionExit_triggered();
 
 private:
+    void loop();
+    
+    bool osziMode = false;
     
     Ui::MainWindow *ui;
 };
